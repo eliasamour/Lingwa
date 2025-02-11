@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import useSpotifyAuth from '../hooks/useSpotifyAuth';
 import LanguageSelector from '../components/LanguageSelector';
 
@@ -9,30 +10,51 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const { token, authenticate } = useSpotifyAuth();
   const [language, setLanguage] = useState('fr');
+  const [storedToken, setStoredToken] = useState(null);
 
-  // ✅ Vérifie l'URL de redirection après connexion Spotify
+  // ✅ Vérifie si un token est déjà enregistré
   useEffect(() => {
-    const handleDeepLink = (event) => {
+    const checkToken = async () => {
+      const savedToken = await AsyncStorage.getItem('spotify_token');
+      if (savedToken) {
+        console.log("🔄 Token récupéré depuis AsyncStorage :", savedToken);
+        setStoredToken(savedToken);
+        router.push('/home'); // ✅ Redirige vers l’écran principal si un token existe déjà
+      }
+    };
+    checkToken();
+  }, []);
+
+  // ✅ Récupère et stocke l'Access Token après connexion Spotify
+  useEffect(() => {
+    const handleDeepLink = async (event) => {
       console.log("🔁 URL complète de redirection :", event.url);
-  
+
       if (event.url.includes("#access_token=")) {
         const accessToken = event.url.split("#access_token=")[1]?.split("&")[0];
         console.log("✅ Access Token récupéré :", accessToken);
+
+        // ✅ Sauvegarde le token dans AsyncStorage
+        await AsyncStorage.setItem('spotify_token', accessToken);
+        setStoredToken(accessToken);
+
+        // ✅ Redirige automatiquement vers `home.js`
+        router.push('/home');
       } else {
         console.log("⚠️ Aucun Access Token trouvé dans l'URL. Vérifie les redirections.");
       }
     };
-  
+
     const subscription = Linking.addEventListener('url', handleDeepLink);
+
     Linking.getInitialURL().then((url) => {
       if (url) handleDeepLink({ url });
     });
-  
+
     return () => {
       subscription.remove();
     };
   }, []);
-  
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
@@ -44,11 +66,9 @@ export default function WelcomeScreen() {
 
       <LanguageSelector selectedLanguage={language} onSelectLanguage={setLanguage} />
 
+      {/* Si déjà connecté, afficher "Connecté !" */}
       <TouchableOpacity
-        onPress={() => {
-          console.log("🎯 Bouton cliqué !");
-          authenticate();
-        }}
+        onPress={authenticate}
         style={{
           backgroundColor: '#1DB954',
           paddingVertical: 12,
@@ -58,7 +78,7 @@ export default function WelcomeScreen() {
         }}
       >
         <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-          {token ? 'Connecté ! 🎧' : 'Se connecter avec Spotify'}
+          {storedToken ? 'Connecté ! 🎧' : 'Se connecter avec Spotify'}
         </Text>
       </TouchableOpacity>
 
