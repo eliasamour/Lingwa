@@ -1,27 +1,47 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import React from 'react';
 
 export default function HomeScreen() {
   const [track, setTrack] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchCurrentTrack = async () => {
-      const token = await AsyncStorage.getItem('spotify_token');
-      if (!token) return;
+  // ✅ Fonction pour récupérer la musique en cours
+  const fetchCurrentTrack = async () => {
+    setLoading(true); // Active le loader pendant la récupération
 
+    const token = await AsyncStorage.getItem('spotify_token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
       const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const data = await response.json();
-      setTrack(data);
-      setLoading(false);
-    };
+      if (response.status === 204) { // 204 = Aucune musique en cours
+        setTrack(null);
+      } else {
+        const data = await response.json();
+        setTrack(data);
+      }
+    } catch (error) {
+      console.error("❌ Erreur en récupérant la musique :", error);
+    }
 
-    fetchCurrentTrack();
-  }, []);
+    setLoading(false);
+  };
+
+  // ✅ Rafraîchit les données quand l’utilisateur revient sur la page
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchCurrentTrack();
+    }, [])
+  );
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
@@ -36,6 +56,20 @@ export default function HomeScreen() {
       ) : (
         <Text style={{ color: '#aaa', fontSize: 18 }}>Aucune musique en cours</Text>
       )}
+
+      {/* ✅ Bouton "Rafraîchir" */}
+      <TouchableOpacity
+        onPress={fetchCurrentTrack}
+        style={{
+          marginTop: 20,
+          paddingVertical: 10,
+          paddingHorizontal: 20,
+          backgroundColor: '#1DB954',
+          borderRadius: 20,
+        }}
+      >
+        <Text style={{ color: '#fff', fontSize: 16 }}>🔄 Rafraîchir</Text>
+      </TouchableOpacity>
     </View>
   );
 }
