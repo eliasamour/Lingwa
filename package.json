@@ -1,7 +1,7 @@
 {
   "name": "lingwa",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "node_modules/expo-router/entry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,7 +9,9 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.1",
     "expo": "~52.0.32",
+    "expo-auth-session": "^6.0.3",
     "expo-router": "^4.0.17",
     "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
