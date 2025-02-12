@@ -109,6 +109,20 @@ export default function HomeScreen() {
               <Text style={{ color: '#aaa', fontSize: 16 }}>Aucune traduction disponible.</Text>
             )}
           </ScrollView>
+
+          {/* ✅ Bouton "Rafraîchir" */}
+          <TouchableOpacity
+            onPress={fetchCurrentTrack}
+            style={{
+              marginTop: 20,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: '#1DB954',
+              borderRadius: 20,
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 16 }}>🔄 Rafraîchir</Text>
+          </TouchableOpacity>
         </>
       ) : (
         <Text style={{ color: '#aaa', fontSize: 18 }}>Aucune musique en cours</Text>
