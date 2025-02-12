@@ -11,7 +11,6 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('fr'); // Langue par défaut
 
-  // ✅ Fonction pour récupérer la musique en cours
   const fetchCurrentTrack = async () => {
     setLoading(true);
 
@@ -28,13 +27,6 @@ export default function HomeScreen() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (response.status === 401) {
-        console.log("🔄 Token expiré, redirection vers la connexion Spotify...");
-        setTrack(null);
-        setLoading(false);
-        return;
-      }
-
       if (response.status === 204) {
         console.log("🎵 Aucune musique en cours sur Spotify.");
         setTrack(null);
@@ -42,22 +34,8 @@ export default function HomeScreen() {
         return;
       }
 
-      const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (error) {
-        console.error("❌ Erreur JSON :", error);
-        setTrack(null);
-        setLoading(false);
-        return;
-      }
-
-      if (data && data.item) {
-        setTrack(data);
-      } else {
-        setTrack(null);
-      }
+      const data = await response.json();
+      setTrack(data?.item ? data : null);
     } catch (error) {
       console.error("❌ Erreur en récupérant la musique :", error);
     }
@@ -65,18 +43,19 @@ export default function HomeScreen() {
     setLoading(false);
   };
 
-  // ✅ Rafraîchit les données quand l’utilisateur revient sur la page
   useFocusEffect(
     React.useCallback(() => {
       fetchCurrentTrack();
     }, [])
   );
 
-  // ✅ Récupération des paroles et traduction avec DeepL
   const artist = track?.item?.artists[0]?.name;
   const title = track?.item?.name;
   const { lyrics, loading: lyricsLoading, error: lyricsError } = useLyrics(artist, title);
   const { translatedLyrics, loading: translationLoading, error: translationError } = useTranslation(lyrics, selectedLanguage);
+
+  const originalLines = lyrics ? lyrics.split("\n") : [];
+  const translatedLines = translatedLyrics ? translatedLyrics : [];
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212', padding: 20 }}>
@@ -84,7 +63,6 @@ export default function HomeScreen() {
         <ActivityIndicator size="large" color="#1DB954" />
       ) : track && track.item ? (
         <>
-          {/* ✅ Affichage des infos de la musique */}
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e1e1e', padding: 15, borderRadius: 10 }}>
             <Image source={{ uri: track.item.album.images[0].url }} style={{ width: 100, height: 100, borderRadius: 10, marginRight: 15 }} />
             <View>
@@ -93,36 +71,22 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* ✅ Affichage des paroles traduites */}
           <ScrollView style={{ marginTop: 20, padding: 10, maxHeight: 400 }}>
-            {lyricsLoading ? (
+            {lyricsLoading || translationLoading ? (
               <ActivityIndicator size="small" color="#1DB954" />
-            ) : lyricsError ? (
-              <Text style={{ color: '#aaa', fontSize: 16 }}>{lyricsError}</Text>
-            ) : translationLoading ? (
-              <ActivityIndicator size="small" color="#1DB954" />
-            ) : translationError ? (
-              <Text style={{ color: '#aaa', fontSize: 16 }}>{translationError}</Text>
-            ) : translatedLyrics ? (
-              <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>{translatedLyrics}</Text>
+            ) : lyricsError || translationError ? (
+              <Text style={{ color: '#aaa', fontSize: 16 }}>{lyricsError || translationError}</Text>
             ) : (
-              <Text style={{ color: '#aaa', fontSize: 16 }}>Aucune traduction disponible.</Text>
+              originalLines.map((line, index) => (
+                <View key={index} style={{ marginBottom: 10 }}>
+                  <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>{line}</Text>
+                  <Text style={{ color: '#1DB954', fontSize: 16, textAlign: 'center', fontStyle: 'italic' }}>
+                    {translatedLines[index] || ""}
+                  </Text>
+                </View>
+              ))
             )}
           </ScrollView>
-
-          {/* ✅ Bouton "Rafraîchir" */}
-          <TouchableOpacity
-            onPress={fetchCurrentTrack}
-            style={{
-              marginTop: 20,
-              paddingVertical: 10,
-              paddingHorizontal: 20,
-              backgroundColor: '#1DB954',
-              borderRadius: 20,
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 16 }}>🔄 Rafraîchir</Text>
-          </TouchableOpacity>
         </>
       ) : (
         <Text style={{ color: '#aaa', fontSize: 18 }}>Aucune musique en cours</Text>
