@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import axios from "axios";
 
-const DEEPL_API_KEY = '***REMOVED***'; // ⚠️ Remplace par ta clé API
+const GOOGLE_API_KEY = "***REMOVED***"; // ⚠️ Remplace avec ta vraie clé API Google Cloud
 
 const useTranslation = (lyrics, targetLanguage) => {
-  const [translatedLyrics, setTranslatedLyrics] = useState([]);
+  const [translatedLyrics, setTranslatedLyrics] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -13,75 +14,44 @@ const useTranslation = (lyrics, targetLanguage) => {
 
       setLoading(true);
       setError(null);
-      setTranslatedLyrics([]);
 
       try {
-        console.log("🔍 Traduction ligne par ligne en cours avec DeepL...");
+        console.log("🔍 Traduction en cours avec Google Translate...");
 
-        // Séparer les paroles ligne par ligne
-        const lines = lyrics.split("\n").map(line => line.trim());
-
-        let translatedLines = [];
-
-        for (const line of lines) {
-          console.log(`📤 Envoi de la ligne : "${line}" à DeepL...`);
-
-          // Vérifier si la ligne est vide
-          if (line === "") {
-            translatedLines.push("");
-            continue;
-          }
-
-          // Pause pour éviter trop de requêtes à DeepL
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          const response = await fetch("https://api-free.deepl.com/v2/translate", {
-            method: "POST",
-            headers: {
-              "Authorization": `DeepL-Auth-Key ${DEEPL_API_KEY}`,
-              "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({
-              text: line,
-              target_lang: targetLanguage.toUpperCase()
-            }).toString()
-          });
-
-          if (response.status === 403) {
-            console.error("❌ Erreur HTTP 403 : Clé API invalide ou quota atteint !");
-            setError("Clé API invalide ou quota dépassé. Vérifie ton compte DeepL.");
-            setLoading(false);
-            return;
-          }
-
-          if (response.status === 429) {
-            console.warn("⏳ Trop de requêtes envoyées, pause de 5 secondes...");
-            await new Promise(resolve => setTimeout(resolve, 5000)); // 🚀 Pause de 5 secondes avant de réessayer
-            continue; // Réessayer après la pause
-          }
-
-          if (!response.ok) {
-            console.error(`❌ Erreur HTTP : ${response.status} ${response.statusText}`);
-            setError(`Erreur DeepL : ${response.statusText}`);
-            setLoading(false);
-            return;
-          }
-
-          const data = await response.json();
-
-          if (data.translations && data.translations.length > 0) {
-            translatedLines.push(data.translations[0].text);
-          } else {
-            console.error("❌ Erreur de DeepL :", data);
-            setError("Impossible de traduire certaines lignes.");
-            translatedLines.push(""); // On met une ligne vide en cas d'erreur pour garder l'alignement
-          }
+        // Vérification : Diviser en lignes et filtrer les vides
+        const lines = lyrics.split("\n").filter(line => line.trim() !== "");
+        if (lines.length === 0) {
+          setError("❌ Aucun texte à traduire.");
+          setLoading(false);
+          return;
         }
 
-        setTranslatedLyrics(translatedLines);
+        // Format de la requête API
+        const response = await axios.post(
+          `https://translation.googleapis.com/language/translate/v2`,
+          {
+            q: lines, // Envoi toutes les lignes en une seule requête
+            target: targetLanguage,
+            format: "text",
+          },
+          {
+            params: { key: GOOGLE_API_KEY }, // La clé API doit être passée en paramètre d'URL
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+
+        // Vérification de la réponse
+        if (!response.data || !response.data.data || !response.data.data.translations) {
+          throw new Error("Réponse invalide de l'API.");
+        }
+
+        // Récupérer la traduction ligne par ligne
+        const translations = response.data.data.translations.map(t => t.translatedText);
+        setTranslatedLyrics(translations.join("\n"));
+
       } catch (err) {
-        console.error("❌ Erreur lors de la traduction avec DeepL :", err);
-        setError("Erreur avec DeepL API.");
+        console.error("❌ Erreur avec Google Translate :", err.response?.data || err.message);
+        setError("Impossible de traduire les paroles.");
       }
 
       setLoading(false);

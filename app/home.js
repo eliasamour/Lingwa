@@ -13,10 +13,11 @@ export default function HomeScreen() {
 
   const fetchCurrentTrack = async () => {
     setLoading(true);
-
     let token = await AsyncStorage.getItem('spotify_token');
+
     if (!token) {
       console.log("⚠️ Aucun token trouvé, l'utilisateur doit se reconnecter.");
+      setTrack(null);
       setLoading(false);
       return;
     }
@@ -35,9 +36,16 @@ export default function HomeScreen() {
       }
 
       const data = await response.json();
-      setTrack(data?.item ? data : null);
+      if (data && data.item) {
+        setTrack(data);
+        console.log("🎶 Musique détectée :", data.item.name);
+      } else {
+        setTrack(null);
+        console.log("⚠️ Aucune musique détectée.");
+      }
     } catch (error) {
       console.error("❌ Erreur en récupérant la musique :", error);
+      setTrack(null);
     }
 
     setLoading(false);
@@ -54,8 +62,27 @@ export default function HomeScreen() {
   const { lyrics, loading: lyricsLoading, error: lyricsError } = useLyrics(artist, title);
   const { translatedLyrics, loading: translationLoading, error: translationError } = useTranslation(lyrics, selectedLanguage);
 
-  const originalLines = lyrics ? lyrics.split("\n") : [];
-  const translatedLines = translatedLyrics ? translatedLyrics : [];
+  // ✅ Correction : Nettoyer les sauts de ligne inutiles
+  const cleanText = (text) => {
+    return text
+      ? text
+          .split("\n")
+          .map(line => line.trim()) // Supprime les espaces vides
+          .filter(line => line !== "") // Supprime les lignes vides
+          .join("\n") // Reconstruit le texte proprement
+      : "";
+  };
+
+  const originalLines = lyrics ? cleanText(lyrics).split("\n") : [];
+  const translatedLines = translatedLyrics ? cleanText(translatedLyrics).split("\n") : [];
+
+  // ✅ Correction : S'assurer que le nombre de lignes correspond
+  while (translatedLines.length < originalLines.length) {
+    translatedLines.push(""); // Ajoute une ligne vide si la traduction est trop courte
+  }
+  while (originalLines.length < translatedLines.length) {
+    originalLines.push(""); // Ajoute une ligne vide si l'original est trop court
+  }
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212', padding: 20 }}>
@@ -63,6 +90,7 @@ export default function HomeScreen() {
         <ActivityIndicator size="large" color="#1DB954" />
       ) : track && track.item ? (
         <>
+          {/* ✅ Infos sur la musique en cours */}
           <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e1e1e', padding: 15, borderRadius: 10 }}>
             <Image source={{ uri: track.item.album.images[0].url }} style={{ width: 100, height: 100, borderRadius: 10, marginRight: 15 }} />
             <View>
@@ -71,6 +99,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
+          {/* ✅ Affichage des paroles et traduction alignée */}
           <ScrollView style={{ marginTop: 20, padding: 10, maxHeight: 400 }}>
             {lyricsLoading || translationLoading ? (
               <ActivityIndicator size="small" color="#1DB954" />
@@ -89,8 +118,27 @@ export default function HomeScreen() {
           </ScrollView>
         </>
       ) : (
-        <Text style={{ color: '#aaa', fontSize: 18 }}>Aucune musique en cours</Text>
+        <>
+          <Text style={{ color: '#aaa', fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+            Aucune musique en cours
+          </Text>
+        </>
       )}
+
+      {/* ✅ Bouton "Rafraîchir" toujours visible */}
+      <TouchableOpacity
+        onPress={fetchCurrentTrack}
+        style={{
+          marginTop: 20,
+          paddingVertical: 12,
+          paddingHorizontal: 24,
+          backgroundColor: '#1DB954',
+          borderRadius: 20,
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>🔄 Rafraîchir</Text>
+      </TouchableOpacity>
     </View>
   );
 }
