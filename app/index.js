@@ -4,12 +4,10 @@ import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useSpotifyAuth from '../hooks/useSpotifyAuth';
-import LanguageSelector from '../components/LanguageSelector';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const { token, authenticate } = useSpotifyAuth();
-  const [language, setLanguage] = useState('fr');
   const [storedToken, setStoredToken] = useState(null);
 
   // ✅ Vérifie si un token est déjà enregistré
@@ -64,9 +62,7 @@ export default function WelcomeScreen() {
         Traduisez vos chansons Spotify en temps réel et apprenez en chantant ! 🎶
       </Text>
 
-      <LanguageSelector selectedLanguage={language} onSelectLanguage={setLanguage} />
-
-      {/* Si déjà connecté, afficher "Connecté !" */}
+      {/* ✅ Bouton de connexion à Spotify */}
       <TouchableOpacity
         onPress={authenticate}
         style={{
@@ -82,6 +78,7 @@ export default function WelcomeScreen() {
         </Text>
       </TouchableOpacity>
 
+      {/* ✅ Bouton "Passer" pour accéder à Home directement */}
       <TouchableOpacity onPress={() => router.push('/home')} style={{ marginTop: 15 }}>
         <Text style={{ color: '#aaa', fontSize: 16 }}>Passer</Text>
       </TouchableOpacity>
