@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import React from 'react';
@@ -9,7 +9,9 @@ import useTranslation from '../hooks/useTranslation';
 export default function HomeScreen() {
   const [track, setTrack] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState('fr'); // Langue par défaut
+  const [selectedLanguage, setSelectedLanguage] = useState('fr');
+  const [tempLanguage, setTempLanguage] = useState('fr');
+  const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const fetchCurrentTrack = async () => {
     setLoading(true);
@@ -62,73 +64,137 @@ export default function HomeScreen() {
   const { lyrics, loading: lyricsLoading, error: lyricsError } = useLyrics(artist, title);
   const { translatedLyrics, loading: translationLoading, error: translationError } = useTranslation(lyrics, selectedLanguage);
 
-  // ✅ Nettoyer les sauts de ligne inutiles
   const cleanText = (text) => {
     return text
       ? text
           .split("\n")
-          .map(line => line.trim()) // Supprime les espaces inutiles
-          .filter(line => line !== "") // Supprime les lignes vides
-          .join("\n") // Reconstruit le texte proprement
+          .map(line => line.trim())
+          .filter(line => line !== "")
+          .join("\n")
       : "";
   };
 
   const originalLines = lyrics ? cleanText(lyrics).split("\n") : [];
   const translatedLines = translatedLyrics ? cleanText(translatedLyrics).split("\n") : [];
 
-  // ✅ S'assurer que les lignes originales et traduites ont la même longueur
   while (translatedLines.length < originalLines.length) {
-    translatedLines.push(""); // Ajoute une ligne vide si la traduction est trop courte
+    translatedLines.push("");
   }
   while (originalLines.length < translatedLines.length) {
-    originalLines.push(""); // Ajoute une ligne vide si l'original est trop court
+    originalLines.push("");
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212', padding: 20 }}>
+    <View style={{ flex: 1, backgroundColor: '#121212', padding: 20 }}>
+      {/* ✅ Titre + Bouton Langue */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Paroles</Text>
+
+        <TouchableOpacity
+          onPress={() => setIsPickerVisible(true)}
+          style={{
+            backgroundColor: '#333',
+            paddingVertical: 10,
+            paddingHorizontal: 15,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#fff'
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 14 }}>🌍 Langue</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ✅ Modal de Sélection de Langue */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isPickerVisible}
+        onRequestClose={() => setIsPickerVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)' 
+        }}>
+          <View style={{
+            backgroundColor: '#222',
+            padding: 20,
+            borderRadius: 15,
+            width: '85%',
+            alignItems: 'center'
+          }}>
+            <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+              🌍 Choisissez une langue
+            </Text>
+
+            {/* ✅ Drapeaux */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%', marginBottom: 15 }}>
+              {[
+                { code: 'fr', flag: '🇫🇷' },
+                { code: 'en', flag: '🇬🇧' },
+                { code: 'es', flag: '🇪🇸' },
+                { code: 'de', flag: '🇩🇪' },
+                { code: 'it', flag: '🇮🇹' },
+                { code: 'pt', flag: '🇵🇹' }
+              ].map((lang, index) => (
+                <TouchableOpacity key={index} onPress={() => setTempLanguage(lang.code)}>
+                  <Text style={{ fontSize: 30 }}>{lang.flag}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* ✅ Valider */}
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedLanguage(tempLanguage);
+                setIsPickerVisible(false);
+              }}
+              style={{
+                backgroundColor: '#1DB954',
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 10,
+                width: '100%',
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>✅ Valider</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ✅ Affichage des paroles */}
       {loading ? (
         <ActivityIndicator size="large" color="#1DB954" />
       ) : track && track.item ? (
         <>
-          {/* ✅ Infos sur la musique en cours */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e1e1e', padding: 15, borderRadius: 10 }}>
+          {/* ✅ Cover de l'album + Détails */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e1e1e', padding: 15, borderRadius: 10, marginBottom: 20 }}>
             <Image source={{ uri: track.item.album.images[0].url }} style={{ width: 100, height: 100, borderRadius: 10, marginRight: 15 }} />
             <View>
-              <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 5 }}>{track.item.name}</Text>
+              <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>{track.item.name}</Text>
               <Text style={{ color: '#aaa', fontSize: 16 }}>{track.item.artists.map(artist => artist.name).join(", ")}</Text>
             </View>
           </View>
 
-          {/* ✅ Affichage des paroles et traduction avec espace entre chaque bloc */}
-          <ScrollView style={{ marginTop: 20, padding: 10, maxHeight: 400 }}>
-  {lyricsLoading || translationLoading ? (
-    <ActivityIndicator size="small" color="#1DB954" />
-  ) : lyricsError || translationError ? (
-    <Text style={{ color: '#aaa', fontSize: 16 }}>{lyricsError || translationError}</Text>
-  ) : (
-    originalLines.map((line, index) => (
-      <View key={index} style={{ marginBottom: 20 }}>  
-        <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>
-          {line || " "}
-        </Text>
-        <Text style={{ color: '#1DB954', fontSize: 16, textAlign: 'center', fontStyle: 'italic' }}>
-          {translatedLines[index] || " "}
-        </Text>
-      </View>
-    ))
-  )}
-</ScrollView>
-
+          {/* ✅ Paroles */}
+          <ScrollView style={{ padding: 10, maxHeight: 400 }}>
+            {originalLines.map((line, index) => (
+              <View key={index} style={{ marginBottom: 20 }}>
+                <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>{line}</Text>
+                <Text style={{ color: '#1DB954', fontSize: 16, textAlign: 'center', fontStyle: 'italic' }}>
+                  {translatedLines[index] || " "}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
         </>
-      ) : (
-        <>
-          <Text style={{ color: '#aaa', fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
-            Aucune musique en cours
-          </Text>
-        </>
-      )}
+      ) : null}
 
-      {/* ✅ Bouton "Rafraîchir" toujours visible */}
+      {/* ✅ Bouton Rafraîchir */}
       <TouchableOpacity
         onPress={fetchCurrentTrack}
         style={{
