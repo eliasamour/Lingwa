@@ -62,12 +62,12 @@ export default function HomeScreen() {
   const { lyrics, loading: lyricsLoading, error: lyricsError } = useLyrics(artist, title);
   const { translatedLyrics, loading: translationLoading, error: translationError } = useTranslation(lyrics, selectedLanguage);
 
-  // ✅ Correction : Nettoyer les sauts de ligne inutiles
+  // ✅ Nettoyer les sauts de ligne inutiles
   const cleanText = (text) => {
     return text
       ? text
           .split("\n")
-          .map(line => line.trim()) // Supprime les espaces vides
+          .map(line => line.trim()) // Supprime les espaces inutiles
           .filter(line => line !== "") // Supprime les lignes vides
           .join("\n") // Reconstruit le texte proprement
       : "";
@@ -76,7 +76,7 @@ export default function HomeScreen() {
   const originalLines = lyrics ? cleanText(lyrics).split("\n") : [];
   const translatedLines = translatedLyrics ? cleanText(translatedLyrics).split("\n") : [];
 
-  // ✅ Correction : S'assurer que le nombre de lignes correspond
+  // ✅ S'assurer que les lignes originales et traduites ont la même longueur
   while (translatedLines.length < originalLines.length) {
     translatedLines.push(""); // Ajoute une ligne vide si la traduction est trop courte
   }
@@ -99,23 +99,26 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* ✅ Affichage des paroles et traduction alignée */}
+          {/* ✅ Affichage des paroles et traduction avec espace entre chaque bloc */}
           <ScrollView style={{ marginTop: 20, padding: 10, maxHeight: 400 }}>
-            {lyricsLoading || translationLoading ? (
-              <ActivityIndicator size="small" color="#1DB954" />
-            ) : lyricsError || translationError ? (
-              <Text style={{ color: '#aaa', fontSize: 16 }}>{lyricsError || translationError}</Text>
-            ) : (
-              originalLines.map((line, index) => (
-                <View key={index} style={{ marginBottom: 10 }}>
-                  <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>{line}</Text>
-                  <Text style={{ color: '#1DB954', fontSize: 16, textAlign: 'center', fontStyle: 'italic' }}>
-                    {translatedLines[index] || ""}
-                  </Text>
-                </View>
-              ))
-            )}
-          </ScrollView>
+  {lyricsLoading || translationLoading ? (
+    <ActivityIndicator size="small" color="#1DB954" />
+  ) : lyricsError || translationError ? (
+    <Text style={{ color: '#aaa', fontSize: 16 }}>{lyricsError || translationError}</Text>
+  ) : (
+    originalLines.map((line, index) => (
+      <View key={index} style={{ marginBottom: 20 }}>  
+        <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center' }}>
+          {line || " "}
+        </Text>
+        <Text style={{ color: '#1DB954', fontSize: 16, textAlign: 'center', fontStyle: 'italic' }}>
+          {translatedLines[index] || " "}
+        </Text>
+      </View>
+    ))
+  )}
+</ScrollView>
+
         </>
       ) : (
         <>
