@@ -1,6 +1,10 @@
 import * as AuthSession from 'expo-auth-session';
 import * as Linking from 'expo-linking';
-import { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } from '../constants/spotify';
+import { CLIENT_ID, REDIRECT_URI } from '../constants/spotify';
+
+console.log("🔍 CLIENT_ID:", CLIENT_ID);
+console.log("🔍 REDIRECT_URI:", REDIRECT_URI);
+
 
 const discovery = {
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',
@@ -11,7 +15,7 @@ export default function useSpotifyAuth() {
   const authenticate = async () => {
     console.log("🔄 Tentative de connexion à Spotify...");
 
-    const authUrl = `${discovery.authorizationEndpoint}?client_id=${SPOTIFY_CLIENT_ID}&response_type=token&redirect_uri=${SPOTIFY_REDIRECT_URI}&scope=user-read-currently-playing`;
+    const authUrl = `${discovery.authorizationEndpoint}?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=user-read-currently-playing`;
 
     console.log("🔗 URL générée :", authUrl);
 

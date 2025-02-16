@@ -1,3 +1,4 @@
-export const SPOTIFY_CLIENT_ID = '***REMOVED***';
-export const SPOTIFY_REDIRECT_URI = '***REMOVED***';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } from '@env';
 
+export const CLIENT_ID = SPOTIFY_CLIENT_ID;
+export const REDIRECT_URI = SPOTIFY_REDIRECT_URI;

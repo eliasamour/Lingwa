@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
-const GOOGLE_API_KEY = "***REMOVED***"; // ⚠️ Remplace avec ta vraie clé API Google Cloud
+import { GOOGLE_API_KEY } from "../constants/translation"; // ✅ Correction ici
 
 const useTranslation = (lyrics, targetLanguage) => {
   const [translatedLyrics, setTranslatedLyrics] = useState(null);
@@ -35,7 +34,7 @@ const useTranslation = (lyrics, targetLanguage) => {
             format: "text",
           },
           {
-            params: { key: GOOGLE_API_KEY }, // La clé API doit être passée en paramètre d'URL
+            params: { key: GOOGLE_API_KEY }, // ✅ Utilisation correcte de l’API Key
             headers: { "Content-Type": "application/json" }
           }
         );
