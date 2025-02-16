@@ -240,4 +240,88 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     width: '100%',
   },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background, // 🔥 Fond plus sombre
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+
+
+  // ✅ Sous-titre sous "Lingwa"
+  subtitle: {
+    color: COLORS.subText,
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+    marginTop : 20,
+    maxWidth: 300, // 🔥 Limite la largeur pour un affichage plus propre
+  },
+
+  // ✅ Bouton de connexion
+  button: {
+    backgroundColor: COLORS.button,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  
+    // ✅ Dégradé appliqué au texte
+
+    maskedView: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    },
+  
+    // ✅ Étend le LinearGradient pour couvrir le texte en largeur
+    gradientText: {
+      width: '100%', // 🔥 Permet au gradient de bien couvrir tout le texte
+      height: 50, // 🔥 Ajuste la hauteur pour couvrir la taille du texte
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  
+    // ✅ Style du texte "Lingwa"
+    appTitle: {
+      fontSize: 40,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 0,
+    },
+// ✅ Dégradé sur le bouton
+  gradientButton: {
+    borderRadius: 30, // Arrondi les bords
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 250, // Ajuster la taille
+  },
+
+  // ✅ Overlay pour que le bouton soit cliquable
+  buttonOverlay: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 30, // Assure que le TouchableOpacity suit le borderRadius
+  },
+
+  // ✅ Texte du bouton
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });

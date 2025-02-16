@@ -1,29 +1,31 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useSpotifyAuth from '../hooks/useSpotifyAuth';
+import { styles, COLORS } from '../styles';
+import * as Animatable from 'react-native-animatable';
+import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const { token, authenticate } = useSpotifyAuth();
   const [storedToken, setStoredToken] = useState(null);
 
-  // ✅ Vérifie si un token est déjà enregistré
   useEffect(() => {
     const checkToken = async () => {
       const savedToken = await AsyncStorage.getItem('spotify_token');
       if (savedToken) {
-        console.log("🔄 Token récupéré depuis AsyncStorage :", savedToken);
+        console.log("🔄 Token trouvé, mais pas de redirection forcée.");
         setStoredToken(savedToken);
-        router.push('/home'); // ✅ Redirige vers l’écran principal si un token existe déjà
       }
     };
     checkToken();
   }, []);
 
-  // ✅ Récupère et stocke l'Access Token après connexion Spotify
   useEffect(() => {
     const handleDeepLink = async (event) => {
       console.log("🔁 URL complète de redirection :", event.url);
@@ -32,11 +34,9 @@ export default function WelcomeScreen() {
         const accessToken = event.url.split("#access_token=")[1]?.split("&")[0];
         console.log("✅ Access Token récupéré :", accessToken);
 
-        // ✅ Sauvegarde le token dans AsyncStorage
         await AsyncStorage.setItem('spotify_token', accessToken);
         setStoredToken(accessToken);
 
-        // ✅ Redirige automatiquement vers `home.js`
         router.push('/home');
       } else {
         console.log("⚠️ Aucun Access Token trouvé dans l'URL. Vérifie les redirections.");
@@ -55,33 +55,40 @@ export default function WelcomeScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' }}>
-      <Image source={require('../assets/logo.png')} style={{ width: 150, height: 150, marginBottom: 20 }} />
+    <View style={styles.container}>
+      <StatusBar style="light" />
 
-      <Text style={{ color: '#fff', fontSize: 22, textAlign: 'center', marginBottom: 20 }}>
-        Traduisez vos chansons Spotify en temps réel et apprenez en chantant ! 🎶
-      </Text>
+      {/* ✅ Texte "Lingwa" avec un dégradé corrigé */}
+      <MaskedView
+  style={styles.maskedView}
+  maskElement={
+    <Text style={[styles.appTitle, { backgroundColor: 'transparent' }]}>Lingwa</Text>
+  }
+>
+  <LinearGradient
+    colors={['#A855F7', '#3B82F6']} // 🔥 Violet → Bleu
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }} // 🔥 Assure un bon dégradé horizontal
+    style={styles.gradientText}
+  >
+    <Text style={[styles.appTitle, { opacity: 0 }]}>Lingwa</Text>
+  </LinearGradient>
+</MaskedView>
 
-      {/* ✅ Bouton de connexion à Spotify */}
-      <TouchableOpacity
-        onPress={authenticate}
-        style={{
-          backgroundColor: '#1DB954',
-          paddingVertical: 12,
-          paddingHorizontal: 24,
-          borderRadius: 30,
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>
-          {storedToken ? 'Connecté ! 🎧' : 'Se connecter avec Spotify'}
-        </Text>
-      </TouchableOpacity>
 
-      {/* ✅ Bouton "Passer" pour accéder à Home directement */}
-      <TouchableOpacity onPress={() => router.push('/home')} style={{ marginTop: 15 }}>
-        <Text style={{ color: '#aaa', fontSize: 16 }}>Passer</Text>
-      </TouchableOpacity>
+
+      <Animatable.Text animation="fadeIn" duration={1200} delay={400} style={styles.subtitle}>
+        Revivez vos musiques étrangères préférées. 🎶
+      </Animatable.Text>
+
+      {/* ✅ Bouton de connexion animé */}
+      <Animatable.View animation="fadeInUp" duration={1000} delay={600}>
+        <TouchableOpacity onPress={authenticate} style={styles.button}>
+          <Text style={styles.buttonText}>
+            {storedToken ? 'Connecté ! 🎧' : 'Se connecter avec Spotify'}
+          </Text>
+        </TouchableOpacity>
+      </Animatable.View>
     </View>
   );
 }
