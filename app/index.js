@@ -85,7 +85,7 @@ export default function WelcomeScreen() {
       <Animatable.View animation="fadeInUp" duration={1000} delay={600}>
         <TouchableOpacity onPress={authenticate} style={styles.button}>
           <Text style={styles.buttonText}>
-            {storedToken ? 'Connecté ! 🎧' : 'Se connecter avec Spotify'}
+            {storedToken ? 'Connecte-toi ! 🎧' : 'Se connecter avec Spotify'}
           </Text>
         </TouchableOpacity>
       </Animatable.View>
