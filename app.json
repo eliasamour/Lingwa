@@ -6,7 +6,13 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "lingwa",
+    "extra": {
+      "CLIENT_ID": "ton_client_id",
+      "REDIRECT_URI": "ton_redirect_uri"
+    },
     "newArchEnabled": true,
+    "jsEngine": "hermes",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -24,6 +30,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "assets":["./assets/fonts/"]
+    "assets": [
+      "./assets/fonts/"
+    ],
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

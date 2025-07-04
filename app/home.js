@@ -12,6 +12,8 @@ import { StatusBar } from 'expo-status-bar';
 
 
 export default function HomeScreen() {
+  console.log("🎤 artist:", artist);
+  console.log("🎵 title:", title);
   const router = useRouter();
   const [track, setTrack] = useState(null);
   const [loading, setLoading] = useState(true);
