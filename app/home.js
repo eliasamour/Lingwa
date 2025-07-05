@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import React from 'react';
 import useLyrics from '../hooks/useLyrics';
-import useTranslation from '../hooks/useTranslation';
+import useTranslation from "../hooks/useTranslation";
 import { styles, COLORS } from '../styles';
 import * as Animatable from 'react-native-animatable';
 import { useRouter } from 'expo-router';
@@ -12,8 +12,12 @@ import { StatusBar } from 'expo-status-bar';
 
 
 export default function HomeScreen() {
-  console.log("🎤 artist:", artist);
-  console.log("🎵 title:", title);
+  useEffect(() => {
+    if (track && track.item) {
+      console.log("🎤 artist:", artist);
+      console.log("🎵 title:", title);
+    }
+  }, [track]);
   const router = useRouter();
   const [track, setTrack] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,8 +61,17 @@ export default function HomeScreen() {
 
   const artist = track?.item?.artists[0]?.name;
   const title = track?.item?.name;
-  const { lyrics, loading: lyricsLoading } = useLyrics(artist, title);
-  const { translatedLyrics } = useTranslation(lyrics, selectedLanguage);
+  
+  const { lyrics, loading: lyricsLoading } = useLyrics(
+    artist && title ? artist : null,
+    artist && title ? title : null
+  );
+
+  const {
+    translatedLyrics,
+    loading: translationLoading,
+    error: translationError
+  } = useTranslation(lyrics, selectedLanguage);
 
   const cleanText = (text) => {
     return text ? text.split("\n").map(line => line.trim()).filter(line => line !== "").join("\n") : "";

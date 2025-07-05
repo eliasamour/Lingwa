@@ -13,17 +13,25 @@ const useLyrics = (artist, title) => {
       setError(null);
 
       try {
-        const response = await fetch(`https://api.lyrics.ovh/v1/${artist}/${title}`);
-        const data = await response.json();
+        const res = await fetch(`http://192.168.1.42:3000/lyrics?artist=${encodeURIComponent(artist)}&title=${encodeURIComponent(title)}`);
+        const text = await res.text();
 
-        if (data.lyrics) {
-          setLyrics(data.lyrics);
-        } else {
-          setLyrics(null);
-          setError("Paroles introuvables.");
+        try {
+          const data = JSON.parse(text);
+          if (data.lyrics) {
+            setLyrics(data.lyrics);
+          } else {
+            console.warn("⚠️ Pas de lyrics dans la réponse :", data);
+            setLyrics(null);
+            setError("Pas de paroles trouvées.");
+          }
+        } catch (parseError) {
+          console.error("❌ JSON parse failed :", text);
+          setError("Réponse invalide du serveur.");
         }
-      } catch (err) {
-        console.error("❌ Erreur lors de la récupération des paroles :", err);
+
+      } catch (e) {
+        console.error("❌ Erreur côté app:", e);
         setError("Impossible de récupérer les paroles.");
       }
 
@@ -31,7 +39,7 @@ const useLyrics = (artist, title) => {
     };
 
     fetchLyrics();
-  }, [artist, title]); // Se met à jour à chaque changement de chanson
+  }, [artist, title]);
 
   return { lyrics, loading, error };
 };
