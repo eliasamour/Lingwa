@@ -1,70 +1,69 @@
-🎵 Lingwa – Apprends les langues en chantant ! 🌍
+# 🎵 Lingwa
 
-📌 Description
+*Lingwa* est une application React Native connectée à Spotify qui affiche et traduit les paroles de la chanson en cours de lecture.
 
-Lingwa est une application mobile qui permet de traduire en temps réel les paroles des musiques écoutées sur Spotify.L'objectif est d'aider les utilisateurs à apprendre des langues étrangères en comprenant les paroles de leurs chansons préférées.
+---
 
-✨ Fonctionnalités
+## 🚀 Fonctionnalités
 
-✅ Connexion à Spotify – Récupère la musique en cours d'écoute
-✅ Affichage des paroles originales – Directement depuis l’API Lyrics.ovh
-✅ Traduction en temps réel – Utilisation de Google Translate API
-✅ Sélection de la langue – Français, Anglais, Espagnol, Allemand, Italien, Portugais
-✅ Interface fluide et intuitive – Expérience utilisateur simplifiée
+* Récupère le morceau en cours sur Spotify
+* Récupère automatiquement les paroles via Genius (scraping)
+* Traduit les paroles dans la langue de votre choix
+* Design optimisé pour mobile avec Expo
 
-📦 Installation et Configuration
+---
 
-1 - Prérequis
+## 📂 Structure du projet
 
-Node.js et npm installés
+```
+ ├── Lingwa/           -> Code de l'application mobile (Expo)
+    └── lyrics-server/    -> Serveur Node.js pour scraper les paroles
+```
 
-Expo CLI installé :
+---
 
-npm install -g expo-cli
+## ⚙️ Installation et lancement
 
-Clé API Google Translate
+1. **Cloner le projet depuis GitHub**
 
-Compte Spotify Developer avec une application configurée
+```bash
+git clone https://github.com/eliasamour/Lingwa.git
+```
 
-2 - Installation du projet
+2. **Installer les dépendances**
 
-Clonez le dépôt et installez les dépendances :
-
-git clone https://github.com/ton-profil/lingwa.git
-cd lingwa
+```bash
+cd Lingwa
 npm install
+```
 
-3 - Configuration des variables d'environnement
+3. **Démarrer l'application mobile (Expo)**
 
-Dans spotify.js, ajoutez votre Client ID Spotify et votre Redirect URI :
+```bash
+npx expo start -c
+```
 
-export const SPOTIFY_CLIENT_ID = 'VOTRE_CLIENT_ID';
-export const SPOTIFY_REDIRECT_URI = 'VOTRE_REDIRECT_URI';
+4. **Démarrer le serveur Node.js (scraping des paroles)**
 
-Dans useTranslation.js, ajoutez votre clé Google Translate API :
+```bash
+cd lyrics-server
+node server.js
+```
 
-const GOOGLE_API_KEY = "VOTRE_CLE_API_GOOGLE";
+---
 
-4 - Lancer l’application
+## 🛡️ Sécurité
 
-expo start
+**⚠️ Important**
 
-Scannez le QR code avec votre téléphone pour ouvrir l’application sur Expo Go.
+* Ne publiez jamais vos fichiers `.env` contenant :
 
-🔥 Défis rencontrés
+  * `GENIUS_ACCESS_TOKEN`
+  * `SPOTIFY_CLIENT_ID`
+  * `SPOTIFY_REDIRECT_URI`
+  * `TRANSLATION_API_KEY`
+* Ajoutez bien le `.env` dans votre `.gitignore` pour éviter de compromettre vos clés API.
 
-❌ Scraping interdit sur Genius → Utilisation de l’API Lyrics.ovh
-❌ Limitation des modèles IA open-source → Passage à Google Translate API
-❌ Gestion du rafraîchissement des paroles → Optimisation des requêtes pour éviter la surcharge
+---
 
-🚀 Améliorations futures
-
-🔹 Améliorer l'UI/UX pour une meilleure expérience utilisateur
-🔹 Développer un modèle IA personnalisé pour une traduction plus naturelle
-🔹 Utiliser Musixmatch pour une base de données plus complète des paroles
-
-📩 Contact
-
-Si vous souhaitez contribuer ou avez des suggestions, contactez-moi !
-📧 Email : elias.amour21@gmail.com
-📍 LinkedIn : https://www.linkedin.com/in/elias-amour-1249aa225/
+AMOUR Elias
